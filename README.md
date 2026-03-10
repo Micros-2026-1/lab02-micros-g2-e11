@@ -4,8 +4,22 @@
 
 
 ## 1. Integrantes
+# [Jose Angel Figueroa Castañeda ](https://github.com/joseanfigueroaca)
+
+# [Diego Fernando Yugue Robayo](https://github.com/DiegoYugue)
+
+# [Nicolas Esteban Martines Rocha](https://github.com/NicolasMartinez)
 
 ## 2. Documentación
+[PICK18F45K22] (https://www.alldatasheet.com/datasheet-pdf/download/348759/MICROCHIP/PIC18F45K22.html)
+## Procedimiento
+1. *Aceptar la tarea* en GitHub Classroom: [ENLACE A LA TAREA]  
+2. Abrir *MPLAB X* y crear un proyecto para *PIC18F45K22*.  
+3. Con el código base de Classroom, crear main.c  en *Source Files*.  
+4. *Realizar el montaje* mostrado en la figura (ver sección 6).  
+5. *Compilar* y *grabar* el programa en el PIC (PICkit 3/4).  
+6. *Observar* la onda generada por el oscilador interno .  
+7. *Modificar* colocar el cristal de cuarso y medir la onda del oscilador externo  
 
 ### 2.1 Descripción del laboratorio
 
