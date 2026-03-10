@@ -15,7 +15,7 @@
 
 - Precisión absoluta de la frecuencia.
 
-- Estabilidad temporal de la señal.
+- Estabilidad temporal de la señal. ybotra cosa
 
 - Efectos de la deriva térmica sobre la frecuencia.
 
