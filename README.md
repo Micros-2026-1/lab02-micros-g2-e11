@@ -73,13 +73,18 @@
 
 ## 2.4 Diagramas
 - oscilador interno 
-👉[ver diagrama ](image.png)
+👉[ver diagrama ](image-2.png)
 
 -oscilador externo 
-👉[ver diagrama ](image-1.png)
+👉[ver diagrama ](image-3.png)
 
 
-## 2.5 Formas de onda
+## 2.5 Formas de onda 
+- Oscilador interno nos muestra una onda cuadrada 
+- Oscilador externo a la salida del pck 15 nos da tambien una onda cuadrada 
+- Oscilador externo en el cristal de cuarzo nos da una onda aleta de tiburon 
+
+
 
 ### INTOSC (interno) 
 
@@ -89,6 +94,15 @@
 ## RC
 
 ## 3. Evidencias de implementación
+*Procedimiento*
+- Onda oscilador interno 
+👉[ver diagrama ](image-6.png)
+
+- Onda oscilador externo 
+👉[ver diagrama ](image-4.png)
+
+- Onda oscilador externo pin 15 
+👉[ver diagrama ](image-5.png)
 
 ## 4. Preguntas
 
