@@ -118,9 +118,11 @@ A través de esta implementación, se busca comprender cómo se configura cada f
 
 * ¿En qué modo se obtuvo la medición más cercana a la frecuencia teórica?
 
-- La medición más cercana a la teórica en frio siempre se obtiene en el Modo 2 (Cristal de Cuarzo externo) y en calor con el modo 3 (oscilador RC). 
+-Depende de la condición de temperatura, pero si miramos estrictamente los números crudos de la columna "Freq. medida RC0 (Hz)" frente a los 500 Hz teóricos:
 
-El porqué: Los cristales de cuarzo son componentes electromecánicos fabricados con una precisión altísima (su error se mide en partes por millón, o ppm). Si usaste un cristal de 16 MHz, la frecuencia real que verás en el osciloscopio será de 15.999 MHz o algo extremadamente cercano, siempre y cuando los capacitores estén correctos.
+En frío (Tabla 1): El modo INTOSC (interno) registró 496,35 Hz. Esta es la medición absoluta más cercana a 500 Hz de ambas tablas (una diferencia de solo 3,65 Hz).
+
+Con calor (Tabla 2): El modo HS (cristal externo) registró 496,27 Hz, siendo el más cercano en esta condición, ya que los otros modos cayeron drásticamente (a 487,54 Hz y 489 Hz).
 
 * ¿Fue posible evidenciar el fenómeno de deriva? ¿Qué factores podrían explicar la variación de frecuencia al calentar el PIC?
 
@@ -130,8 +132,13 @@ El porqué: Los cristales de cuarzo son componentes electromecánicos fabricados
 
 * ¿Cuál es más preciso en cuanto a frecuencia teórica vs. medida?
 
-- Definitivamente el Modo 2 (Cristal de Cuarzo).
-Mientras que el oscilador interno (Modo 1) tiene un margen de error de fábrica que puede rondar entre el $\pm 1\%$ y el $\pm 2\%$ a temperatura ambiente (¡eso es un error de hasta 320 kHz en un reloj de 16 MHz!), el cristal de cuarzo suele tener una precisión superior al $0.005\%$.
+-El modo HS (cristal externo 16 MHz) es indiscutiblemente el más preciso y, sobre todo, el más estable.
+
+Menor desviación: Si nos guiamos por la columna de Error (%), el modo HS tiene el error más bajo registrado: 0,746%.
+
+Inmunidad a la temperatura: Su precisión se mantiene prácticamente intacta sin importar la temperatura (0,746% en frío frente a 0,75% con calor).
+
+Contraste: Por el contrario, los modos INTOSC y RC externo demuestran ser muy imprecisos bajo estrés térmico, disparando su margen de error a 2,56% y 2,25% respectivamente cuando se les aplica calor.
 
 * Explique cómo usar RC0 para estimar la frecuencia del oscilador cuando RA6 no está disponible.
 
