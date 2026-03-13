@@ -68,7 +68,7 @@
 | HS (cristal externo 16 MHz) |                |                |
 | RC externo       |                 |                
 
-
+j
 <!-- Agregar tablas para valores usando PLL -->
 
 <!-- Complemente con análisis de lo registrado en tablas -->
