@@ -39,7 +39,15 @@
 8. *Modificar* colocar el cristal de cuarso y medir la onda del oscilar en la salida 15 del pick 
 
 ### 2.1 Descripción del laboratorio
+El presente laboratorio tiene como propósito principal implementar y comprobar el funcionamiento de tres diferentes fuentes de oscilación (reloj) en un microcontrolador de la familia PIC18F (específicamente el PIC18F22K), haciendo uso del programador PICkit 3.5. Durante la práctica, se configurará el microcontrolador para operar bajo tres esquemas distintos:
 
+Modo interno: Utilizando el oscilador integrado del propio chip, lo cual ahorra componentes externos.
+
+Modo cristal: Conectando un cristal de cuarzo externo para lograr una alta precisión en los tiempos de ejecución.
+
+Modo RC: Construyendo un reloj externo básico mediante un circuito de resistencia y condensador (RC).
+
+A través de esta implementación, se busca comprender cómo se configura cada fuente de reloj a nivel de hardware y software, y observar cómo cada modo afecta directamente la velocidad de trabajo y la precisión del microcontrolador.
 ### 2.2 Explicación del código implementado
 
 ### 2.3 Análisis y comparación
@@ -48,27 +56,27 @@
 
 | Modo de oscilador | Freq. teórica Fosc | RA6 medible (CLKO)? | Freq. medida RA6 (Hz) | Freq. teórica RC0 (Hz)| Freq. medida RC0 (Hz) | Error RC0 (%) |  
 |------------------|------------------|---------------------|---------------|---------------------|---------------|---------------|
-| INTOSC (interno) | 16,000,000       | Sí                 |                     |                500                 |               |               | |
-| HS (cristal externo 16 MHz) | 16,000,000 | No |     NA      |               500                 |               |               |
-| RC externo       | ~16,000,000*     | No                                    |       N/A        | 500                 |               |               | |
+| INTOSC (interno) | 16,000,000       | Sí                 |         31,4            |                500                 |       496,35        |       0,93        | |
+| HS (cristal externo 16 MHz) | 16,000,000 | No |     NA      |               500                 |       496,27        |        0,746       |
+| RC externo       | ~16,000,000*     | No                                    |       N/A        | 500                 |        496,1       |        0,78       | |
 
 #### Tabla 2: Medición con calor
 
 | Modo de oscilador | Freq. teórica Fosc | RA6 medible (CLKO)? | Freq. medida RA6 (Hz) | Freq. teórica RC0 (Hz)| Freq. medida RC0 (Hz) | Error RC0 (%) |  
 |------------------|------------------|---------------------|---------------|---------------------|---------------|---------------|
-| INTOSC (interno) | 16,000,000       | Sí                 |                     |                500                 |               |               | |
-| HS (cristal externo 16 MHz) | 16,000,000 | No |     NA      |               500                 |               |               |
-| RC externo       | ~16,000,000*     | No                                    |       N/A        | 500                 |               |               | |
+| INTOSC (interno) | 16,000,000       | Sí                 |                     |                500                 |       487,54        |      2,56         | |
+| HS (cristal externo 16 MHz) | 16,000,000 | No |     NA      |               500                 |       496,27        |         0,75      |
+| RC externo       | ~16,000,000*     | No                                    |       N/A        | 500                 |        489       |        2,25       | |
 
 #### Tabla 3: Deriva
 
 | Modo de oscilador |RC0 deriva (Hz) |
 |------------------|--------------------|
-| INTOSC (interno) |                    |                
-| HS (cristal externo 16 MHz) |                |                |
+| INTOSC (interno) |          16MHz*4          |                
+| HS (cristal externo 16 MHz) |         900KHz       |                |
 | RC externo       |                 |                
 
-j
+
 <!-- Agregar tablas para valores usando PLL -->
 
 <!-- Complemente con análisis de lo registrado en tablas -->
@@ -110,7 +118,7 @@ j
 
 * ¿En qué modo se obtuvo la medición más cercana a la frecuencia teórica?
 
-- La medición más cercana a la teórica siempre se obtiene en el Modo 2 (Cristal de Cuarzo externo).
+- La medición más cercana a la teórica en frio siempre se obtiene en el Modo 2 (Cristal de Cuarzo externo) y en calor con el modo 3 (oscilador RC). 
 
 El porqué: Los cristales de cuarzo son componentes electromecánicos fabricados con una precisión altísima (su error se mide en partes por millón, o ppm). Si usaste un cristal de 16 MHz, la frecuencia real que verás en el osciloscopio será de 15.999 MHz o algo extremadamente cercano, siempre y cuando los capacitores estén correctos.
 
@@ -169,7 +177,7 @@ En este modo, conectas un cristal de cuarzo físico junto con dos pequeños capa
 
 3. Modo 3: RC Externo (Resistencia-Capacitor)
 Aquí construyes tu propio reloj conectando una resistencia (R) y un capacitor (C) básicos al pin OSC1. La velocidad dependerá de los valores que elijas para esos dos componentes.
-* Ventajas:
+* Ventajas: 
 - Costo extremadamente bajo: Las resistencias y capacitores estándar cuestan centavos.
 - Frecuencia personalizable: Puedes obtener frecuencias "raras" o específicas simplemente cambiando la resistencia o el capacitor, sin tener que buscar un cristal fabricado a esa medida exacta.
 
@@ -178,4 +186,9 @@ Aquí construyes tu propio reloj conectando una resistencia (R) y un capacitor (
 - Pésima precisión: Es el modo más impreciso de todos. Los componentes comunes tienen tolerancias muy altas (una resistencia puede variar un $5\%$ de su valor real y un capacitor hasta un $20\%$).
 - Altamente inestable: El ruido ambiental, la temperatura del cuarto y el voltaje afectan drásticamente a los componentes externos, haciendo que la frecuencia baile de un lado a otro constantemente.
 - Limitado en velocidad: No es recomendable para frecuencias altas (como 16 MHz), se suele usar solo para velocidades bajas donde el tiempo no es un factor crítico.
+
 ## 5. Referencias
+https://www.youtube.com/watch?v=duRDGrotWjQ
+https://www.youtube.com/watch?v=27fmSFTqeg0
+https://www.todopic.com.ar/foros/index.php?topic=30693.0
+https://www.youtube.com/watch?v=PhbIlsvHE9g
