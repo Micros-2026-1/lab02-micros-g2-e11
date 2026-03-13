@@ -49,8 +49,147 @@ Modo RC: Construyendo un reloj externo básico mediante un circuito de resistenc
 
 A través de esta implementación, se busca comprender cómo se configura cada fuente de reloj a nivel de hardware y software, y observar cómo cada modo afecta directamente la velocidad de trabajo y la precisión del microcontrolador.
 ### 2.2 Explicación del código implementado
+Este código está escrito en C (utilizando el compilador XC8, indicado por #include <xc.h>) y está diseñado para un microcontrolador PIC. Su objetivo principal es configurar el hardware para evaluar diferentes tipos de osciladores y generar una señal cuadrada de 500 Hz en un pin de salida.
 
-### 2.3 Análisis y comparación
+1. Configuración General (#pragma config)
+Esta sección prepara el "terreno" del microcontrolador apagando funciones que podrían interferir con tu experimento:
+
+WDTEN, LVP, BOREN, etc. en OFF: Apaga el Perro Guardián (Watchdog Timer), la programación en bajo voltaje, los reinicios por caídas de tensión y las protecciones de código. Esto garantiza que el microcontrolador no se reinicie inesperadamente mientras haces tus mediciones.
+
+2. Selección del Modo de Oscilador (#define MODE 1)
+El código utiliza directivas de preprocesamiento (#if, #elif) para que puedas cambiar fácilmente entre los tres modos de oscilador que evaluaste en tus tablas, cambiando un solo número:
+
+Modo 1 (INTIO67): Usa el oscilador interno del microcontrolador.
+
+Modo 2 (HSHP): Usa un cristal de cuarzo externo de alta velocidad (High-Speed).
+
+Modo 3 (RC): Usa un circuito de resistencia-condensador externo.
+
+Actualmente, el código está configurado para compilarse en el Modo 1 (#define MODE 1).
+
+3. Frecuencia del Sistema (_XTAL_FREQ)
+Esta macro es crucial porque le dice al compilador a qué velocidad está corriendo el microcontrolador para que la función __delay_ms() calcule los tiempos correctamente.
+
+Observación importante: Si te fijas, para el Modo 1 sin PLL (como está configurado ahora), el código define _XTAL_FREQ como 900000UL (900 kHz). Sin embargo, en las tablas que me mostraste anteriormente, tu frecuencia teórica era de 16 MHz. Si el hardware está configurado a 16 MHz pero el software cree que está a 900 kHz, los retardos no serán precisos.
+
+4. Funciones de Inicialización
+init_pins(): Configura los pines de entrada/salida.
+
+Establece el pin RC0 como salida digital (poniendo TRISC0 = 0) y lo inicializa apagado (LATC0 = 0).
+
+También configura el pin RA6 como salida si el modo lo permite (por ejemplo, para medir la señal de reloj o CLKO, tal como se menciona en tus tablas).
+
+init_oscillator(): Activa el multiplicador de frecuencia (PLL) en los registros del microcontrolador, pero solo si la variable USE_PLL está activada (actualmente está en 0).
+
+5. El Bucle Principal (main)
+Después de inicializar los pines y el oscilador, el programa entra en un bucle infinito (while(1)):
+
+Enciende el pin RC0 (LATC0 = 1).
+
+Espera 1 milisegundo.
+
+Apaga el pin RC0 (LATC0 = 0).
+
+Espera 1 milisegundo.
+
+¿Por qué genera 500 Hz?
+Un ciclo completo de la señal (encendido y apagado) tarda 2 milisegundos. La frecuencia es el inverso del período (1 / 0,002 segundos), lo que da exactamente 500 Hz. Esta es la "Freq. teórica RC0" que aparece en tus tablas de resultados.
+
+## Código Optimizado
+Basado en el análisis anterior, el código de producción se configura permanentemente para el modo **HS (Cristal Externo)** por ser el más estable. Además, se define correctamente `_XTAL_FREQ` a 16 MHz para garantizar la precisión de los retardos en todo momento.
+
+```c
+#include <xc.h>    
+#include <stdint.h>
+
+// ========================== CONFIGURACIÓN GENERAL ========================
+#pragma config WDTEN = OFF      
+#pragma config LVP = OFF        
+#pragma config PBADEN = OFF     
+#pragma config CP0 = OFF, CP1 = OFF, CP2 = OFF, CP3 = OFF  
+#pragma config BOREN = OFF      
+#pragma config FCMEN = OFF      
+#pragma config IESO = OFF       
+
+// ========================== MODO DE OSCILADOR ==========================
+// Configurado permanentemente para el cristal externo (El más preciso)
+#define MODE 2 
+
+#if MODE == 1
+    #pragma config FOSC = INTIO67   
+    #define USE_PLL 0
+#elif MODE == 2
+    #pragma config FOSC = HSHP     
+    #define USE_PLL 0
+#elif MODE == 3
+    #pragma config FOSC = RC       
+    #define USE_PLL 0
+#else
+    #error "Modo de oscilador inválido"
+#endif
+
+// ========================== FRECUENCIA DEL OSCILADOR =====================
+// Definido a 16 MHz teóricos para cálculos exactos de delay
+#define _XTAL_FREQ 16000000UL 
+
+// ========================== FUNCIONES ==========================
+void delay_ms(uint16_t ms) {
+    while(ms--) {
+        __delay_ms(1); 
+    }
+}
+
+void init_pins(void) {
+    TRISCbits.TRISC0 = 0;
+    LATCbits.LATC0 = 0;
+
+    if(MODE == 1 || (MODE == 2 && USE_PLL)) {
+        TRISAbits.TRISA6 = 0;
+        LATAbits.LATA6 = 0;
+    }
+}
+
+void init_oscillator(void) {
+#if USE_PLL
+    OSCCONbits.SPLLEN = 1;  
+#endif
+}
+
+// ========================== PROGRAMA PRINCIPAL ==========================
+void main(void) {
+    init_pins();
+    init_oscillator();
+
+    while(1) {
+        // RC0 toggle a 500 Hz
+        LATCbits.LATC0 = 1;
+        delay_ms(1);
+        LATCbits.LATC0 = 0;
+        delay_ms(1);
+    }
+}
+```
+## 2.3 Análisis y comparación
+
+Basado en las mediciones empíricas en frío y con calor de la señal en RC0 frente a los 500 Hz teóricos, se obtuvieron las siguientes conclusiones para cada modo de oscilador:
+
+1. Modo INTOSC (Oscilador Interno)
+Comportamiento: Mostró una buena precisión en frío (496,35 Hz), pero demostró ser muy vulnerable a los cambios de temperatura. Al aplicarle calor, la frecuencia cayó drásticamente a 487,54 Hz (error del 2,56%).
+
+Uso recomendado: Ideal para proyectos básicos donde el ahorro de espacio y pines es prioridad, pero no recomendado si el dispositivo va a sufrir estrés térmico o requiere tiempos exactos.
+
+2. Modo HS (Cristal de Cuarzo Externo) 
+Comportamiento: Fue el ganador indiscutible del experimento. Mantuvo la frecuencia altamente estable en ambas condiciones (496,27 Hz), registrando el margen de error más bajo de la prueba (~0,75%). Demostró ser prácticamente inmune a las variaciones térmicas.
+
+Uso recomendado: Obligatorio para aplicaciones profesionales, medición de tiempos exactos, relojes en tiempo real y comunicación serial estricta.
+
+3. Modo RC Externo (Resistencia-Capacitor Externos)
+Comportamiento: Su rendimiento fue deficiente frente a los cambios de temperatura. Aunque en frío logró 496,1 Hz, al aplicarle calor la frecuencia cayó a 489 Hz (error del 2,25%). Además, su frecuencia inicial depende enteramente de la tolerancia física de la resistencia y el capacitor utilizados.
+
+Uso recomendado: Prácticamente obsoleto en la actualidad debido a la superioridad técnica, menor costo y ahorro de pines que ofrecen los osciladores internos modernos.
+
+
+
 
 #### Tabla 1: Medición en frío
 
@@ -95,13 +234,40 @@ A través de esta implementación, se busca comprender cómo se configura cada f
 - Oscilador externo en el cristal de cuarzo nos da una onda aleta de tiburon 
 
 
-
-### INTOSC (interno) 
+### INTOSC 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3045b3af-8eb5-45fc-ab6d-267bb5cf8fec" width="50% shadow="true"">
+  <br>
+  <em>ONDA OSCILOSCOPIO MODO INTERNO</em>
+</p>
 
 
 ### HS
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e4f04b98-409f-4175-ae16-9cacb8582164" width="50% shadow="true"">
+  <br>
+  <em>ONDA OSCILOSCOPIO MODO EXTERNO</em>
+</p>
 
 ## RC
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/aaf2fd6d-7002-41c9-9821-8e66db7dc04a" width="50% shadow="true"">
+  <br>
+  <em>ONDA OSCILOSCOPIO MODO RC</em>
+</p>
+
+## SIMULACION GENERAL
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/8f4b4485-16a4-423b-af52-afb57cfddc4d" width="50% shadow="true"">
+  <br>
+  <em>PROTEUS</em>
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/78f8fffa-2454-4620-aae4-4c9a0d8df90c" width="50% shadow="true"">
+  <br>
+  <em>GRAFICA</em>
+</p>
 
 ## 3. Evidencias de implementación
 *Procedimiento*
